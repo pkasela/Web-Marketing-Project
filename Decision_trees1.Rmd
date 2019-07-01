@@ -1,0 +1,101 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+Decision Tree 
+```{r}
+library(pander)
+```
+
+```{r}
+df_master <- read.csv2("C:/Users/Marco/Desktop/df_master.csv", sep = ",")
+```
+```{r}
+str(df_master)
+```
+
+```{r}
+colonne_na <- sapply(colnames(df_master[,-c(1,6,7,8,9,10,21,22,23)]),
+                     function(x) any(is.na(df_master[,x])))
+#colonne_na[colonne_na == TRUE]
+total_rf <- df_master[,-c(1,6,7,8,9,10,21,22,23)][,!colonne_na]
+```
+```{r}
+str(total_rf)
+```
+
+
+```{r}
+total_rf[,'TARGET'] <- as.factor(df_master[,'TARGET'])
+total_rf[,'NUM_SEND_PREV'] <- as.factor(df_master[,'NUM_SEND_PREV'])
+total_rf[,'NUM_OPEN_PREV'] <- as.factor(df_master[,'NUM_OPEN_PREV'])
+total_rf[,'NUM_CLICK_PREV'] <- as.factor(df_master[,'NUM_CLICK_PREV'])
+total_rf[,'NUM_FAIL_PREV'] <- as.factor(df_master[,'NUM_FAIL_PREV'])
+total_rf[,'ID_NEG'] <- as.factor(df_master[,'ID_NEG'])
+total_rf[,'TYP_CLI_FID'] <- as.factor(df_master[,'TYP_CLI_FID'])
+total_rf[,'STATUS_FID'] <- as.factor(df_master[,'STATUS_FID'])
+total_rf[,'NUM_FIDs'] <- as.factor(df_master[,'NUM_FIDs'])
+#total_rf[,'AGE_FID'] <- as.numeric(df_master[,'AGE_FID'])
+total_rf[,'TYP_CLI_ACCOUNT'] <- as.factor(df_master[,'TYP_CLI_ACCOUNT'])
+total_rf[,'FLAG_PRIVACY_1'] <- as.factor(df_master[,'FLAG_PRIVACY_1'])
+total_rf[,'FLAG_PRIVACY_2'] <- as.factor(df_master[,'FLAG_PRIVACY_2'])
+total_rf[,'FLAG_DIRECT_MKT'] <- as.factor(df_master[,'FLAG_DIRECT_MKT'])
+```
+
+```{r}
+str(total_rf)
+```
+
+
+```{r}
+set.seed(12345)  
+sample <- sample.int(n = nrow(total_rf), size = floor(.75*nrow(total_rf)), replace = F)
+train <- total_rf[sample, ]
+test  <- total_rf[-sample, ]
+```
+
+```{r}
+library(rpart)
+library(rpart.plot)
+```
+
+```{r}
+tree_model <- rpart(TARGET ~ ., data= train)
+rpart.plot(tree_model, extra = 106)
+```
+
+```{r}
+predict_unseen <-predict(tree_model, test, type = 'class')
+```
+
+```{r}
+table_mat <- table(test$TARGET, predict_unseen)
+table_mat
+```
+
+```{r}
+accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
+accuracy_Test
+```
+
+```{r}
+precision <- table_mat[2,2] / (table_mat[2, 2] +table_mat[1, 2])
+
+precision
+```
+
+```{r}
+recall <- table_mat[2,2] / (table_mat[2, 2] + table_mat[2, 1])
+
+recall
+```
+
+```{r}
+F_measure = (2*precision*recall) / (precision + recall)
+
+F_measure
+```
+
