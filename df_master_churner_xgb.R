@@ -27,13 +27,13 @@ train_index <- createDataPartition(df_master_churner$CHURN,
 #train_set <- df_master[train_index,-c(1,3,4,5,6,9,10)]
 #test_set  <- df_master[-train_index,-c(1,3,4,5,6,9,10)] 
 
-colonne_na <- sapply(colnames(df_master_churner[,-c(3,8,13,14,15,16)]),
+colonne_na <- sapply(colnames(df_master_churner[,-c(2,3,8,13,14,15,16)]),
                      function(x) any(is.na(df_master_churner[,x])))
 colonne_na[colonne_na == TRUE]
 #EMAIL_PROVIDER_CLEAN, PRV, W_PHONE, TYP_JOB
 #Li elimino
 
-total_rf <- df_master_churner[,-c(3,8,13,14,15,16)][,!colonne_na]
+total_rf <- df_master_churner[,-c(2,3,8,13,14,15,16)][,!colonne_na]
 
 train_set_rf <- total_rf[train_index,]
 test_set_rf  <- total_rf[-train_index,]
@@ -41,7 +41,7 @@ test_set_rf  <- total_rf[-train_index,]
 #dtrain <- xgb.DMatrix(data = as.matrix(train_set_rf[,-1]), label = train_set_rf$TARGET)
 xgb <- xgboost(data = as.matrix(train_set_rf[,-1]), 
                label = train_set_rf[,'CHURN'], 
-               max.depth = 20, eta = 0.5, nthread = 4, nrounds = 10,
+               max.depth = 20, eta = 0.5, nthread = 4, nrounds = 100,
                objective = "binary:logistic"
                
 )
@@ -55,3 +55,6 @@ y_pred <- predict(xgb, as.matrix(test_set_rf[,-1]))
 pred <- as.factor(as.numeric(y_pred > 0.5))
 Accuracy(pred,test_set_rf[,1])
 
+y_pred <- predict(xgb2, as.matrix(test_set_rf[,-1]))
+pred <- as.factor(as.numeric(y_pred > 0.5))
+Accuracy(pred,test_set_rf[,1])
