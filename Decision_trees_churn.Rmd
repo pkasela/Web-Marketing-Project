@@ -1,0 +1,172 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+Decision Trees2
+
+```{r}
+require(caret)
+require(MLmetrics)
+require(rpart)
+require(ROSE)
+require(gbm)
+require(xgboost)
+```
+
+
+```{r}
+df_master_churner <- read.csv2("C:/Users/Marco/Downloads/df_master_churner.csv", sep = ",")
+```
+
+```{r}
+train_index <- createDataPartition(df_master_churner$CHURN, 
+                                   p = .60, 
+                                   list = FALSE, 
+                                   times = 1)
+colonne_na <- sapply(colnames(df_master_churner[,-c(2,3,8,13,14,15,16)]),
+                     function(x) any(is.na(df_master_churner[,x])))
+colonne_na[colonne_na == TRUE]
+
+total_rf <- df_master_churner[,-c(2,3,8,13,14,15,16)][,!colonne_na]
+```
+```{r}
+str(total_rf)
+```
+
+```{r}
+total_rf[,'CHURN'] <- as.factor(total_rf[,'CHURN'])
+#total_rf[,'ID_NEG'] <- as.factor(total_rf[,'ID_NEG'])
+total_rf[,'TYP_CLI_FID'] <- as.factor(total_rf[,'TYP_CLI_FID'])
+total_rf[,'STATUS_FID'] <- as.factor(total_rf[,'STATUS_FID'])
+total_rf[,'NUM_FIDs'] <- as.factor(total_rf[,'NUM_FIDs'])
+total_rf[,'W_PHONE'] <- as.factor(total_rf[,'W_PHONE'])
+total_rf[,'TYP_CLI_ACCOUNT'] <- as.factor(total_rf[,'TYP_CLI_ACCOUNT'])
+total_rf[,'FLAG_PRIVACY_1'] <- as.factor(total_rf[,'FLAG_PRIVACY_1'])
+total_rf[,'FLAG_PRIVACY_2'] <- as.factor(total_rf[,'FLAG_PRIVACY_2'])
+total_rf[,'FLAG_DIRECT_MKT'] <- as.factor(total_rf[,'FLAG_DIRECT_MKT'])
+total_rf[,'TOTAL_PURCHASE'] <- as.numeric(as.character(df_master_churner$TOTAL_PURCHASE))
+```
+
+```{r}
+str(total_rf)
+```
+
+```{r}
+set.seed(12345)  
+sample <- sample.int(n = nrow(total_rf), size = floor(.75*nrow(total_rf)), replace = F)
+train <- total_rf[sample, ]
+test  <- total_rf[-sample, ]
+```
+
+```{r}
+library(rpart)
+library(rpart.plot)
+```
+
+```{r}
+tree_model <- rpart(CHURN ~ ., data= train)
+rpart.plot(tree_model, extra = 106)
+```
+
+Tolgo number of purchase 
+```{r}
+tree_model <- rpart(CHURN ~ TOTAL_PURCHASE + ID_NEG + 
+                      TYP_CLI_FID + STATUS_FID + NUM_FIDs + W_PHONE + TYP_CLI_ACCOUNT + 
+                      FLAG_PRIVACY_1 + FLAG_PRIVACY_2 + FLAG_DIRECT_MKT, data= train)
+rpart.plot(tree_model, extra = 102)
+```
+
+```{r}
+printcp(tree_model)
+```
+
+Cross validation results 
+```{r}
+plotcp(tree_model)
+```
+
+```{r}
+summary(tree_model)
+```
+
+
+
+
+```{r}
+predict_unseen <-predict(tree_model, test, type = 'class')
+```
+
+```{r}
+table_mat <- table(test$CHURN, predict_unseen)
+table_mat
+```
+
+```{r}
+accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
+accuracy_Test
+```
+
+```{r}
+precision <- table_mat[2,2] / (table_mat[2, 2] +table_mat[1, 2])
+
+precision
+```
+
+```{r}
+recall <- table_mat[2,2] / (table_mat[2, 2] + table_mat[2, 1])
+
+recall
+```
+
+```{r}
+F_measure = (2*precision*recall) / (precision + recall)
+
+F_measure
+```
+
+Random Forest 
+```{r}
+library(randomForest)
+```
+
+```{r}
+fit <- randomForest(CHURN ~ TOTAL_PURCHASE + ID_NEG + 
+                      TYP_CLI_FID + STATUS_FID + NUM_FIDs + W_PHONE + TYP_CLI_ACCOUNT + 
+                      FLAG_PRIVACY_1 + FLAG_PRIVACY_2 + FLAG_DIRECT_MKT, data= train)
+```
+
+```{r}
+print(fit)
+```
+
+```{r}
+importance(fit)
+```
+
+```{r}
+accuracy <- (13249 + 84186) / (13249 + 84186 + 51889 + 9769)
+accuracy
+```
+
+----------------------------------------------------------------------------------------------------------------
+
+```{r}
+predict_unseen_rf <-predict(fit, test, type = 'class')
+```
+
+```{r}
+table_mat <- table(test$CHURN, predict_unseen)
+table_mat
+```
+
+```{r}
+accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
+accuracy_Test
+```
+
+
+
+
