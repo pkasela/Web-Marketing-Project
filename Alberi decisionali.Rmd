@@ -1,0 +1,270 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+#Decision Trees 
+
+Librerie
+```{r}
+library(pander)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+
+require(caret)
+require(MLmetrics)
+require(rpart)
+require(ROSE)
+require(gbm)
+require(xgboost)
+```
+
+##Propensity of email engagement (Base model)
+
+Df_master pulito
+```{r}
+df_master = read.csv2("C:/Users/Marco/Google Drive (msavi195@gmail.com)/DATA SCIENCE/PRIMO ANNO/Web Marketing/Progetto/df_master.csv", sep = ";")
+```
+
+```{r}
+str(df_master)
+```
+
+Set seed (12345)
+```{r}
+set.seed(12345)
+```
+
+```{r}
+df_master_trees <- df_master[,-c(1,7,8,9,10,21)]
+
+str(df_master_trees)
+```
+
+Traformo queste variabili in fattori: 
+```{r}
+df_master_trees[,'TARGET'] <- as.factor(df_master_trees[,'TARGET'])
+df_master_trees[,'NUM_SEND_PREV'] <- as.factor(df_master_trees[,'NUM_SEND_PREV'])
+df_master_trees[,'NUM_OPEN_PREV'] <- as.factor(df_master_trees[,'NUM_OPEN_PREV'])
+df_master_trees[,'NUM_CLICK_PREV'] <- as.factor(df_master_trees[,'NUM_CLICK_PREV'])
+df_master_trees[,'NUM_FAIL_PREV'] <- as.factor(df_master_trees[,'NUM_FAIL_PREV'])
+df_master_trees[,'ID_NEG'] <- as.factor(df_master_trees[,'ID_NEG'])
+df_master_trees[,'TYP_CLI_FID'] <- as.factor(df_master_trees[,'TYP_CLI_FID'])
+df_master_trees[,'STATUS_FID'] <- as.factor(df_master_trees[,'STATUS_FID'])
+df_master_trees[,'NUM_FIDs'] <- as.factor(df_master_trees[,'NUM_FIDs'])
+df_master_trees[,'TYP_CLI_ACCOUNT'] <- as.factor(df_master_trees[,'TYP_CLI_ACCOUNT'])
+df_master_trees[,'FLAG_PRIVACY_1'] <- as.factor(df_master_trees[,'FLAG_PRIVACY_1'])
+df_master_trees[,'FLAG_PRIVACY_2'] <- as.factor(df_master_trees[,'FLAG_PRIVACY_2'])
+df_master_trees[,'FLAG_DIRECT_MKT'] <- as.factor(df_master_trees[,'FLAG_DIRECT_MKT'])
+df_master_trees[,'W_PHONE'] <- as.factor(df_master_trees[,'W_PHONE'])
+
+```
+
+```{r}
+str(df_master_trees)
+```
+
+Train e Test set
+```{r}
+sample <- sample.int(n = nrow(df_master_trees), size = floor(.60*nrow(df_master_trees)), replace = F)
+train <- df_master_trees[sample, ]
+test  <- df_master_trees[-sample, ]
+```
+
+###Decision tree considerando tutte le variabili 
+```{r}
+tree_model <- rpart(TARGET ~ ., data= train)
+rpart.plot(tree_model, extra = 106)
+```
+```{r}
+summary(tree_model)
+```
+
+```{r}
+printcp(tree_model)
+```
+
+```{r}
+predict_unseen <-predict(tree_model, test, type = 'class')
+```
+
+```{r}
+table_mat <- table(test$TARGET, predict_unseen)
+table_mat
+```
+
+
+```{r}
+accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
+accuracy_Test
+```
+Accuracy = 0.8765773
+
+```{r}
+precision <- table_mat[2,2] / (table_mat[2, 2] +table_mat[1, 2])
+
+precision
+```
+Precision = 0.6768676 
+
+```{r}
+recall <- table_mat[2,2] / (table_mat[2, 2] + table_mat[2, 1])
+
+recall
+```
+Recall = 0.3519526 
+
+```{r}
+F_measure = (2*precision*recall) / (precision + recall)
+
+F_measure
+```
+F_measure = 0.4631039 
+
+###Random Forest 
+```{r}
+tree_model_rf <- randomForest(TARGET ~ ., data= train, ntree = 100)
+```
+
+```{r}
+print(tree_model_rf)
+```
+
+```{r}
+importance(tree_model_rf)
+```
+
+```{r}
+y_pred <- predict(tree_model_rf, test[, -1])
+```
+
+Recall
+```{r}
+Recall(test[,1],y_pred,positive = '1')
+```
+Precision 
+```{r}
+Precision(test[,1],y_pred,positive = '1')
+```
+F1_score
+```{r}
+F1_Score(test[,1],y_pred,positive = '1')
+```
+
+##Propensity to churn 
+```{r}
+df_master_churner <- read.csv2("C:/Users/Marco/Google Drive (msavi195@gmail.com)/DATA SCIENCE/PRIMO ANNO/Web Marketing/Progetto/df_master_churner.csv", sep = ",")
+```
+
+```{r}
+str(df_master_churner)
+```
+
+```{r}
+df_master_churn_trees <- df_master_churner[,-c(2,3,13)]
+```
+
+```{r}
+str(df_master_churn_trees)
+```
+
+```{r}
+df_master_churn_trees[,'CHURN'] <- as.factor(df_master_churn_trees[,'CHURN'])
+df_master_churn_trees[,'ID_NEG'] <- as.factor(df_master_churn_trees[,'ID_NEG'])
+df_master_churn_trees[,'TYP_CLI_FID'] <- as.factor(df_master_churn_trees[,'TYP_CLI_FID'])
+df_master_churn_trees[,'STATUS_FID'] <- as.factor(df_master_churn_trees[,'STATUS_FID'])
+df_master_churn_trees[,'W_PHONE'] <- as.factor(df_master_churn_trees[,'W_PHONE'])
+df_master_churn_trees[,'TYP_CLI_ACCOUNT'] <- as.factor(df_master_churn_trees[,'TYP_CLI_ACCOUNT'])
+df_master_churn_trees[,'FLAG_PRIVACY_1'] <- as.factor(df_master_churn_trees[,'FLAG_PRIVACY_1'])
+df_master_churn_trees[,'FLAG_PRIVACY_2'] <- as.factor(df_master_churn_trees[,'FLAG_PRIVACY_2'])
+df_master_churn_trees[,'FLAG_DIRECT_MKT'] <- as.factor(df_master_churn_trees[,'FLAG_DIRECT_MKT'])
+
+df_master_churn_trees[,'TOTAL_PURCHASE'] <- as.character(df_master_churn_trees[,'TOTAL_PURCHASE'])
+df_master_churn_trees[,'TOTAL_PURCHASE'] <- as.numeric(df_master_churn_trees[,'TOTAL_PURCHASE'])
+```
+
+```{r}
+str(df_master_churn_trees)
+```
+
+```{r}
+sample <- sample.int(n = nrow(df_master_churn_trees), size = floor(.75*nrow(df_master_churn_trees)), replace = F)
+train <- df_master_churn_trees[sample, ]
+test  <- df_master_churn_trees[-sample, ]
+```
+
+Albero con tutte le variabili 
+```{r}
+tree_model_churn <- rpart(CHURN ~ ., data= train)
+rpart.plot(tree_model_churn, extra = 106)
+```
+```{r}
+summary(tree_model)
+```
+
+```{r}
+printcp(tree_model)
+```
+
+
+Tolgo Number of Purchase
+```{r}
+tree_model_churn <- rpart(CHURN ~ TOTAL_PURCHASE + ID_NEG + 
+                      TYP_CLI_FID + STATUS_FID + ID_NEG + W_PHONE + TYP_CLI_ACCOUNT + 
+                      FLAG_PRIVACY_1 + FLAG_PRIVACY_2 + FLAG_DIRECT_MKT + REGION + EMAIL_PROVIDER_CLEAN, data= train)
+rpart.plot(tree_model_churn, extra = 106)
+```
+```{r}
+summary(tree_model)
+```
+
+```{r}
+printcp(tree_model)
+```
+
+```{r}
+predict_unseen <-predict(tree_model_churn, test, type = 'class')
+```
+
+```{r}
+table_mat <- table(test$CHURN, predict_unseen)
+table_mat
+```
+
+!!! Calcolo accuracy, precision e F1_measure con formula 
+
+###Random Forest 
+```{r}
+tree_model_churn_rf <- randomForest(CHURN ~ ., data= train, ntree = 100)
+```
+
+```{r}
+print(tree_model_churn_rf)
+```
+
+```{r}
+importance(tree_model_churn_rf)
+```
+
+```{r}
+y_pred <- predict(tree_model_churn_rf, test[, -1])
+```
+
+Recall
+```{r}
+Recall(test[,1],y_pred,positive = '1')
+```
+Precision 
+```{r}
+Precision(test[,1],y_pred,positive = '1')
+```
+F1_score
+```{r}
+F1_Score(test[,1],y_pred,positive = '1')
+```
+
+
+
