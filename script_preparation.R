@@ -61,13 +61,6 @@ dist_num_fid_x_cli <- num_fid_x_cli %>%
   group_by(NUM_FIDs, NUM_DATEs) %>%
   summarize(TOT_CLIs = n_distinct(ID_CLI))
 
-dist_num_fid_x_cli
-
-# there are clients with multiple fid
-# lets have a closer look
-num_fid_x_cli %>% filter(NUM_DATEs == 3)
-
-df_1_cli_fid %>% filter(ID_CLI == 621814)
 
 ## keep both first fid and last fid ##
 # first --> registration date
@@ -101,44 +94,6 @@ df_1_cli_fid_clean <- df_1_cli_fid_last %>%
 str(df_1_cli_fid_clean)
 summary(df_1_cli_fid_clean)
 
-## explore distributions ##
-# COD_FID
-df_1_cli_fid_clean %>%
-  group_by(COD_FID) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_1_cli_fid_clean, aes(x=COD_FID)) + geom_bar()
-
-# TYP_CLI_FID
-df_1_cli_fid_clean %>%
-  group_by(TYP_CLI_FID) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_1_cli_fid_clean, aes(x=TYP_CLI_FID)) + geom_bar()
-
-# STATUS_FID
-df_1_cli_fid_clean %>%
-  group_by(STATUS_FID) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_1_cli_fid_clean, aes(x=STATUS_FID)) + geom_bar()
-
-# ID_NEG
-df_1_cli_fid_clean %>%
-  group_by(ID_NEG) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs))  %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_1_cli_fid_clean, aes(x=ID_NEG)) + geom_bar()
-
-
 
 ### df_2_cli_account ###
 
@@ -166,43 +121,6 @@ df_2_cli_account_clean <- df_2_cli_account_clean %>%
   mutate(EMAIL_PROVIDER = fct_explicit_na(EMAIL_PROVIDER, "(missing)")) %>%
   mutate(TYP_JOB = fct_explicit_na(TYP_JOB, "(missing)"))
 
-## explore distributions ##
-# COD_FID
-df_2_cli_account_clean %>%
-  group_by(EMAIL_PROVIDER) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-df_2_cli_account_clean %>%
-  summarize(TOT_EMAIL_PROVIDER = n_distinct(EMAIL_PROVIDER))
-
-# too many different values for EMAIL_PROVIDER to be an useful category
-
-# W_PHONE
-df_2_cli_account_clean %>%
-  group_by(W_PHONE) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_2_cli_account_clean, aes(x=W_PHONE)) + geom_bar()
-
-# TYP_JOB
-df_2_cli_account_clean %>%
-  group_by(TYP_JOB) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-df_2_cli_account_clean %>%
-  summarize(TOT_TYP_JOB = n_distinct(TYP_JOB))
-
-ggplot(df_2_cli_account_clean, aes(x=TYP_JOB)) + geom_bar()
-
-## lets review ##
-str(df_2_cli_account_clean)
-summary(df_2_cli_account_clean)
 
 # too many missing values for EMAIL_PROVIDER to be an useful category
 # keep the most frequent values and (missing) while changing the remaing into "OTHER"
@@ -213,32 +131,24 @@ freq_email_providers <- df_2_cli_account_clean %>%
   arrange(desc(PERCENT)) %>%
   mutate(PERCENT_COVERED = cumsum(TOT_CLIs)/sum(TOT_CLIs))
 
-head(freq_email_providers, 20)
 
 clean_email_providers <- freq_email_providers %>%
   mutate(EMAIL_PROVIDER = as.character(EMAIL_PROVIDER)) %>%
   mutate(AUX = if_else(PERCENT_COVERED < 0.85 | (PERCENT_COVERED > 0.85 & lag(PERCENT_COVERED) < 0.85), 1,0)) %>%
   mutate(EMAIL_PROVIDER_CLEAN = if_else(AUX | EMAIL_PROVIDER == "(missing)", EMAIL_PROVIDER, "others"))
 
-head(clean_email_providers, 20)
 
 df_2_cli_account_clean <- df_2_cli_account %>%
   mutate(EMAIL_PROVIDER = as.character(EMAIL_PROVIDER)) %>%
   left_join(clean_email_providers %>%
               select(EMAIL_PROVIDER, EMAIL_PROVIDER_CLEAN)
             , by = "EMAIL_PROVIDER") %>%
-  select(-EMAIL_PROVIDER) %>%
-  mutate(EMAIL_PROVIDER_CLEAN = as.factor(EMAIL_PROVIDER_CLEAN))
+  select(-EMAIL_PROVIDER,-TYP_JOB) %>% #TYP_JOB Troppi valori mancanti
+  mutate(EMAIL_PROVIDER_CLEAN = as.factor(EMAIL_PROVIDER_CLEAN))%>%
+  mutate(EMAIL_PROVIDER_CLEAN = fct_explicit_na(EMAIL_PROVIDER_CLEAN, "(missing)"))%>%
+  mutate(W_PHONE = as.factor(W_PHONE)) %>%
+  mutate(W_PHONE = fct_explicit_na(W_PHONE, "0"))
 
-## explore distributions ##
-# EMAIL_PROVIDER_CLEAN
-df_2_cli_account_clean %>%
-  group_by(EMAIL_PROVIDER_CLEAN) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_2_cli_account_clean, aes(x=EMAIL_PROVIDER_CLEAN)) + geom_bar()
 
 ## lets review ##
 str(df_2_cli_account_clean)
@@ -261,35 +171,10 @@ df_3_cli_address_clean <- df_3_cli_address_clean %>%
   mutate(REGION = as.factor(REGION)) %>%
   distinct()
 
-# closer look on df_3_cli_address
-df_3_cli_address_clean %>%
-  group_by(w_CAP = !is.na(CAP), w_PRV = !is.na(PRV), w_REGION = !is.na(REGION)) %>%
-  summarize(TOT_ADDs = n_distinct(ID_ADDRESS))
-
-df_3_cli_address_clean %>% select(PRV, REGION) %>% distinct() %>% arrange(desc(nchar(as.character(PRV))))
-
 # drop the record without CAP - PRV - REGION
 df_3_cli_address_clean <- df_3_cli_address_clean %>%
   filter(!is.na(CAP) & !is.na(PRV) & !is.na(REGION))
 
-## explore distributions ##
-# PRV
-df_3_cli_address_clean %>%
-  group_by(PRV) %>%
-  summarize(TOT_ADDs = n_distinct(ID_ADDRESS)) %>%
-  mutate(PERCENT = TOT_ADDs/sum(TOT_ADDs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_3_cli_address_clean, aes(x=PRV)) + geom_bar()
-
-# REGION
-df_3_cli_address_clean %>%
-  group_by(REGION) %>%
-  summarize(TOT_ADDs = n_distinct(ID_ADDRESS)) %>%
-  mutate(PERCENT = TOT_ADDs/sum(TOT_ADDs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_3_cli_address_clean, aes(x=REGION)) + geom_bar()
 
 ## lets review ##
 str(df_3_cli_address_clean)
@@ -312,39 +197,7 @@ df_4_cli_privacy_clean <- df_4_cli_privacy_clean %>%
   mutate(FLAG_PRIVACY_2 = as.factor(FLAG_PRIVACY_2)) %>%
   mutate(FLAG_DIRECT_MKT = as.factor(FLAG_DIRECT_MKT))
 
-## explore distributions ##
-# FLAG_PRIVACY_1
-df_4_cli_privacy_clean %>%
-  group_by(FLAG_PRIVACY_1) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
 
-ggplot(df_4_cli_privacy_clean, aes(x=FLAG_PRIVACY_1)) + geom_bar()
-
-# FLAG_PRIVACY_2
-df_4_cli_privacy_clean %>%
-  group_by(FLAG_PRIVACY_2) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_4_cli_privacy_clean, aes(x=FLAG_PRIVACY_2)) + geom_bar()
-
-# FLAG_DIRECT_MKT
-df_4_cli_privacy_clean %>%
-  group_by(FLAG_DIRECT_MKT) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_4_cli_privacy_clean, aes(x=FLAG_DIRECT_MKT)) + geom_bar()
-
-df_4_cli_privacy_clean %>%
-  group_by(FLAG_PRIVACY_1, FLAG_PRIVACY_2, FLAG_DIRECT_MKT) %>%
-  summarize(TOT_CLIs = n_distinct(ID_CLI)) %>%
-  mutate(PERCENT = TOT_CLIs/sum(TOT_CLIs)) %>%
-  arrange(desc(PERCENT))
 
 ## lets review ##
 str(df_4_cli_privacy_clean)
@@ -364,17 +217,6 @@ df_5_camp_cat_clean <- df_5_camp_cat
 df_5_camp_cat_clean <- df_5_camp_cat_clean %>%
   select(-CHANNEL_CAMP)
 
-## explore distributions ##
-# FLAG_DIRECT_MKT
-df_5_camp_cat_clean %>%
-  group_by(TYP_CAMP) %>%
-  summarize(TOT_CAMPs = n_distinct(ID_CAMP)) %>%
-  mutate(PERCENT = TOT_CAMPs/sum(TOT_CAMPs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_5_camp_cat_clean, aes(x=TYP_CAMP)) + geom_bar()
-
-
 
 ### df_6_camp_event ###
 
@@ -393,18 +235,6 @@ df_6_camp_event_clean <- df_6_camp_event_clean %>%
 # lets combine them into a common category "FAILURE" with "F" as EVENT_CODE before changing the field to factor
 df_6_camp_event_clean <- df_6_camp_event_clean %>%
   mutate(TYP_EVENT = as.factor(if_else(TYP_EVENT == "E" | TYP_EVENT == "B", "F", as.character(TYP_EVENT))))
-
-## explore distributions ##
-# type event
-df_6_camp_event_clean %>%
-  group_by(TYP_EVENT) %>%
-  summarize(TOT_EVENTs = n_distinct(ID_EVENT), TOT_CLIs = n_distinct(ID_CLI), TOT_CAMPs = n_distinct(ID_CAMP)) %>%
-  mutate(PERCENT_EVENT = TOT_EVENTs/sum(TOT_EVENTs), PERCENT_CLI = TOT_CLIs/sum(TOT_CLIs), PERCENT_CAMP = TOT_CAMPs/sum(TOT_CAMPs)) %>%
-  arrange(desc(PERCENT_EVENT), desc(PERCENT_EVENT), desc(PERCENT_CAMP))
-
-ggplot(df_6_camp_event_clean %>% select(TYP_EVENT, ID_EVENT) %>% distinct(), aes(x=TYP_EVENT)) + geom_bar()
-ggplot(df_6_camp_event_clean %>% select(TYP_EVENT, ID_CLI) %>% distinct(), aes(x=TYP_EVENT)) + geom_bar()
-ggplot(df_6_camp_event_clean %>% select(TYP_EVENT, ID_CAMP) %>% distinct(), aes(x=TYP_EVENT)) + geom_bar()
 
 # min - max dates
 df_6_camp_event_clean %>% summarize(MIN_DATE = min(EVENT_DATE), MAX_DATE = max(EVENT_DATE))
@@ -461,30 +291,6 @@ df_sents_w_open <- df_sents %>%
             ) %>%
   filter(is.na(OPEN_DATE) | SEND_DATE <= OPEN_DATE) %>%
   mutate(DIFF = as.integer(OPEN_DATE - SEND_DATE))
-
-# number of sents without opens
-df_sents_w_open %>%
-  group_by(w_open = !is.na(DIFF)) %>%
-  summarize(TOT_SENTs = n_distinct(ID_EVENT_S)) %>%
-  mutate(PERCENT = TOT_SENTs/sum(TOT_SENTs)) %>%
-  arrange(desc(PERCENT))
-
-ggplot(df_sents_w_open, aes(x=!is.na(DIFF))) + geom_bar()
-
-# distribution days opens
-df_sents_w_open %>% filter(!is.na(DIFF)) %>%
-  group_by(DIFF) %>%
-  summarize(TOT_EVENTs = n_distinct(ID_EVENT_S)) %>%
-  arrange(DIFF) %>%
-  mutate(PERCENT_COVERED = cumsum(TOT_EVENTs)/sum(TOT_EVENTs))
-
-ggplot(df_sents_w_open %>% filter(!is.na(DIFF)) %>%
-         group_by(DIFF) %>%
-         summarize(TOT_EVENTs = n_distinct(ID_EVENT_S)) %>%
-         arrange(DIFF) %>%
-         mutate(PERCENT_COVERED = cumsum(TOT_EVENTs)/sum(TOT_EVENTs)) %>%
-         filter(DIFF <= 14)
-       , aes(y=PERCENT_COVERED, x=DIFF)) + geom_line() + geom_point() + scale_x_continuous(breaks=seq(0,14,2), minor_breaks=0:14)
 
 # we can choose as window function 2 day
 window_days <- 2
@@ -574,72 +380,7 @@ df_master <- target_event_w_prev %>%
   mutate(REGION = fct_explicit_na(REGION)) %>%
   select(-ID_ADDRESS, -ID_CLI, -ID_CAMP, -ID_DELIVERY, -SEND_DATE, -FIRST_DT_ACTIVE)
 
-# check there are not duplicates
-df_master %>%
-  group_by(ID_EVENT_S) %>% 
-  summarize(num = n()) %>% 
-  group_by(num) %>%
-  count()
-
-#### DATA ESPLORATION ####
-
-# lets see the frequency of the event
-df_master %>%
-  group_by(TARGET) %>%
-  summarize(NUM_EVENTs = n_distinct(ID_EVENT_S))
-
-df_master %>%
-  group_by(TARGET,  W_SEND_PREV) %>%
-  summarize(NUM_EVENTs = n_distinct(ID_EVENT_S), mean_OR = mean(OPEN_RATE_PREV, na.rm = T))
-
 str(df_master)
 summary(df_master)
 
-
-library(tidyr) # needed for the pivot function spread()
-
-prepare_chisq <- function(df, x){
-  y <- enquo(x)
-  
-
-  test_df <- df %>%
-    mutate(KEY = if_else(TARGET == "1", "OK", "KO")) %>%
-    select(UQ(y), KEY, ID_EVENT_S) %>%
-    group_by(UQ(y), KEY) %>%
-    summarize(n = n()) %>%
-    spread(KEY, n) %>%
-    ungroup() %>%
-    as.data.frame()
-
-  test_m <- test_df %>%
-    select(OK, KO) %>%
-    mutate(OK = if_else(is.na(OK), as.integer(0), OK)) %>%
-    mutate(KO = if_else(is.na(KO), as.integer(0), KO)) %>%
-    as.matrix() 
-  row.names(test_m) <- as.character(test_df[,1])
-
-  return(test_m)
-}
-
-plot_factor <- function(df, x, lab){
-  y <- enquo(x)
-
-  df_count_tot <- df %>%
-  group_by(UQ(y)) %>%
-  summarise(n_tot = n_distinct(ID_EVENT_S)) %>%
-  ungroup()
-
-  df_count <- df %>%
-  group_by(UQ(y), TARGET) %>%
-  summarise(n = n_distinct(ID_EVENT_S))
-
-  df <- df_count %>%
-  left_join(df_count_tot, by = lab) %>%
-  mutate(frac = round(n / n_tot, 2))
-
-  ggplot(data=df, aes(x=UQ(y), y=frac, fill=TARGET)) +
-  geom_bar(stat="identity", position=position_dodge()) +
-  geom_text(aes(x=UQ(y), y=frac, label = frac),
-            position = position_dodge(width = 1),
-            vjust = 2, size = 3, color = "white", fontface = "bold")
-}
+write.csv2(df_master,"df_master.csv",row.names = FALSE)

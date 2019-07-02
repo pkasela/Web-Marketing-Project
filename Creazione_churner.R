@@ -99,22 +99,16 @@ clean_email_providers <- freq_email_providers %>%
   mutate(AUX = if_else(PERCENT_COVERED < 0.85 | (PERCENT_COVERED > 0.85 & lag(PERCENT_COVERED) < 0.85), 1,0)) %>%
   mutate(EMAIL_PROVIDER_CLEAN = if_else(AUX | EMAIL_PROVIDER == "(missing)", EMAIL_PROVIDER, "others"))
 
-head(clean_email_providers, 20)
-
-df_2_cli_account_clean_2 <- df_2_cli_account %>%
+df_2_cli_account_clean <- df_2_cli_account %>%
   mutate(EMAIL_PROVIDER = as.character(EMAIL_PROVIDER)) %>%
   left_join(clean_email_providers %>%
               select(EMAIL_PROVIDER, EMAIL_PROVIDER_CLEAN)
             , by = "EMAIL_PROVIDER") %>%
-  select(-EMAIL_PROVIDER) %>%
-  mutate(EMAIL_PROVIDER_CLEAN = as.factor(EMAIL_PROVIDER_CLEAN))
-
-df_2_cli_account_clean_2$W_PHONE[is.na(df_2_cli_account_clean_2$W_PHONE)] <- 0
-df_2_cli_account_clean_2$TYP_JOB <- as.character(df_2_cli_account_clean_2$TYP_JOB)
-df_2_cli_account_clean_2$TYP_JOB[is.na(df_2_cli_account_clean_2$TYP_JOB)] <- "(missing)"
-df_2_cli_account_clean_2$EMAIL_PROVIDER_CLEAN <- as.character(df_2_cli_account_clean_2$EMAIL_PROVIDER_CLEAN)
-df_2_cli_account_clean_2$EMAIL_PROVIDER_CLEAN[is.na(df_2_cli_account_clean_2$EMAIL_PROVIDER_CLEAN)] <- "(missing)"
-
+  select(-EMAIL_PROVIDER,-TYP_JOB) %>%
+  mutate(EMAIL_PROVIDER_CLEAN = as.factor(EMAIL_PROVIDER_CLEAN))%>%
+  mutate(EMAIL_PROVIDER_CLEAN = fct_explicit_na(EMAIL_PROVIDER_CLEAN, "(missing)"))%>%
+  mutate(W_PHONE = as.factor(W_PHONE)) %>%
+  mutate(W_PHONE = fct_explicit_na(W_PHONE, "0"))
 
 
 df_3_cli_address_clean <- df_3_cli_address
@@ -141,19 +135,21 @@ df_4_cli_privacy_clean <- df_4_cli_privacy_clean %>%
 
 
 df_master <- df_1_cli_fid_clean %>%
-  select(ID_CLI, ID_NEG, TYP_CLI_FID, COD_FID, STATUS_FID, FIRST_DT_ACTIVE, NUM_FIDs) %>%
-  left_join(df_2_cli_account_clean_2
+  select(ID_CLI, ID_NEG, TYP_CLI_FID, COD_FID, STATUS_FID) %>%
+  left_join(df_2_cli_account_clean
             , by = "ID_CLI") %>%
   left_join(df_3_cli_address_clean %>%
               select(ID_ADDRESS, PRV, REGION)
             , by = "ID_ADDRESS") %>%
   left_join(df_4_cli_privacy_clean
             , by = "ID_CLI") %>%
-  select(-ID_ADDRESS, -FIRST_DT_ACTIVE)
+  select(-ID_ADDRESS)
 
 
 #Questo è il dataset dei churn finale
 df_master_2 <- df_churn %>%
-  left_join(df_master, by="ID_CLI")
+  left_join(df_master, by="ID_CLI")%>%
+  mutate(PRV = fct_explicit_na(PRV)) %>%
+  mutate(REGION = fct_explicit_na(REGION))
 
-#write.csv(df_master_2,"df_master_churner.csv",row.names = FALSE)
+write.csv(df_master_2,"df_master_churner.csv",row.names = FALSE)
