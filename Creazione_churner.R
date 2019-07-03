@@ -1,10 +1,11 @@
-require(tidyr)
-require(dplyr)
-require(purrr)
+library(tidyr)
+library(dplyr)
+library(forcats)
+
 
 set.seed(12345)
 
-setwd("/home/pranav/Desktop/web marketing/datasets/")
+setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
 
 df_1_cli_fid <- read.csv2("raw_1_cli_fid.csv", na.strings = c("NA", ""))
 df_2_cli_account <- read.csv2("raw_2_cli_account.csv", na.strings = c("NA", ""))
@@ -13,8 +14,7 @@ df_4_cli_privacy <- read.csv2("raw_4_cli_privacy.csv" , na.strings = c("NA", "")
 df_7_scrontrini <- read.csv2("raw_7_tic.csv")
 
 df_7_scrontrini$DATETIME <- as.Date(df_7_scrontrini$DATETIME)
-df_7_scrontrini$IMPORTO_LORDO <- as.numeric(gsub(",",".",df_7_scrontrini$IMPORTO_LORDO))
-head(df_7_scrontrini)
+#min(df_7_scrontrini$DATETIME), max(df_7_scrontrini$DATETIME)
 #data inizio raccolta: 2018-05-01, data fine raccolta: 2019-04-30
 
 df_7_scrontrini %>%
@@ -80,7 +80,6 @@ df_2_cli_account_clean <- df_2_cli_account
 
 ## correct NA in categories ##
 # we make use of the package forcats
-require(forcats)
 
 df_2_cli_account_clean <- df_2_cli_account_clean %>%
   mutate(EMAIL_PROVIDER = fct_explicit_na(EMAIL_PROVIDER, "(missing)"))

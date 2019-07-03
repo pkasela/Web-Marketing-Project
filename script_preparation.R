@@ -2,6 +2,8 @@
 library(dplyr)
 library(magrittr)
 library(ggplot2)
+library(forcats)
+
 
 
 
@@ -9,7 +11,7 @@ library(ggplot2)
 #### IMPORTING DATA SETS ####
 
 ### set working directory ###
-setwd("/home/pranav/Desktop/web marketing/datasets/")
+setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
 ### clients fidelity subscriptions ###
 df_1_cli_fid <- read.csv2("raw_1_cli_fid.csv", na.strings = c("NA", ""))
 
@@ -114,7 +116,6 @@ df_2_cli_account_clean <- df_2_cli_account_clean %>%
 
 ## correct NA in categories ##
 # we make use of the package forcats
-library(forcats)
 
 df_2_cli_account_clean <- df_2_cli_account_clean %>%
   mutate(W_PHONE = fct_explicit_na(W_PHONE, "0")) %>%
