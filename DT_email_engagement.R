@@ -61,14 +61,13 @@ F1_Score(pred,test_set[,1],positive = '1')
 Accuracy(pred,test_set[,1])
 
 #ROC curve 
-library(pROC)
 pred_with_prob <- rpart.predict(tree_model, test_set[, -1], type = "prob")[,2]
 #plot(performance(prediction(pred_with_prob, test_set$TARGET), 'tpr', 'fpr'))
 ROC1 <- performance(prediction(pred_with_prob, test_set$TARGET), 'tpr', 'fpr')
 ROC_DF1 <- data.frame(x=ROC1@x.values[[1]], y=ROC1@y.values[[1]])
 
 #Random Forest 
-memory.limit(100000)
+#memory.limit(100000)
 tree_model_rf <- randomForest(TARGET ~ ., data= train_set, ntree = 100)
 print(tree_model_rf)
 importance(tree_model_rf)
@@ -86,3 +85,11 @@ pred_with_prob_rf <- rpart.predict(tree_model_rf, test_set[, -1], type = "prob")
 
 ROC2 <- performance(prediction(pred_with_prob_rf, test_set$TARGET), 'tpr', 'fpr')
 ROC_DF2 <- data.frame(x=ROC2@x.values[[1]], y=ROC2@y.values[[1]])
+
+#ROC1 + ROC2
+ggplot() + 
+  geom_line(data = ROC_DF1,aes(x,y,col="A"),show.legend = TRUE) +
+  xlab('False Positive Rate') + ylab('True Positive Rate') +
+  geom_line(data=ROC_DF2,aes(x,y,col="B"),show.legend = TRUE) +
+  scale_colour_manual(name = "Model", values = c("A"="red","B"="blue"),
+                      labels = c("DT", "RF"))
