@@ -1,18 +1,15 @@
 library(rpart)
 library(rpart.plot)
 library(randomForest)
-
 library(caret)
 library(MLmetrics)
 library(rpart)
-library(ROSE)
-library(gbm)
-library(xgboost)
 
 set.seed(12345)
+setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
+df_master_churner <- read.csv("df_master_churner.csv")
 
-df_master_churner <- read.csv("C:/Users/Marco/Google Drive (msavi195@gmail.com)/DATA SCIENCE/PRIMO ANNO/Web Marketing/Progetto/df_master_churner.csv")
-
+#Si elimina Client ID, LAST_PURCHASE (che indica i churners) e PRV (troppi fattori)
 df_master_churn_trees <- df_master_churner[,-c(2,3,13)]
 
 df_master_churn_trees[,'CHURN'] <- as.factor(df_master_churn_trees[,'CHURN'])
@@ -52,8 +49,9 @@ recall(pred,test_set[,1],relevant = '1')
 precision(pred,test_set[,1],relevant = '1')
 F1_Score(pred,test_set[,1],positive = '1')
 Accuracy_dt_all <- Accuracy(pred,test_set[,1])
+cat(Accuracy_dt_all)
 
-#Tolgo Number of Purchase
+#Tolgo Number of Purchase perhcé tutto albero dipende da quello praticamente
 tree_model_churn1 <- rpart(CHURN ~ ., data= train_set[,-c(3,4)])
 rpart.plot(tree_model_churn1, extra = 106,roundint=FALSE)
 
@@ -68,10 +66,10 @@ recall(pred,test_set[,1],relevant = '1')
 precision(pred,test_set[,1],relevant = '1')
 F1_Score(pred,test_set[,1],positive = '1')
 Accuracy_dt_less_one <- Accuracy(pred,test_set[,1])
-
+cat(Accuracy_dt_less_one)
 
 #Random Forest 
-memory.limit(100000)
+#memory.limit(100000) #solo per Windows
 tree_model_churn_rf <- randomForest(CHURN ~ ., data= train_set, ntree = 100)
 
 print(tree_model_churn_rf)
@@ -84,8 +82,8 @@ recall(pred_churn_rf, test_set[,1],relevant = '1')
 precision(pred_churn_rf ,test_set[,1],relevant = '1')
 F1_Score(pred_churn_rf ,test_set[,1],positive = '1')
 Accuracy_rf <- Accuracy(pred_churn_rf, test_set[,1])
-
+cat(Accuracy_rf)
 Accuracy_total <- data.frame(model = c("DT_all", "DT_less_one", "RF"), Accuracy = c(Accuracy_dt_all, 
                                                                                     Accuracy_dt_less_one, 
                                                                                     Accuracy_rf))
-                             
+Accuracy_total                             

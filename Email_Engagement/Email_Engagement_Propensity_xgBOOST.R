@@ -1,8 +1,6 @@
 library(caret)
 library(randomForest)
 library(MLmetrics)
-library(rpart)
-library(ROSE)
 library(gbm)
 library(xgboost)
 library(ROCR)
@@ -20,8 +18,13 @@ train_index <- createDataPartition(df_master$TARGET,
 
 #elimino gli indici nella prima colonna che sono ID
 # e gli altri che sono o categorici (si potrebbe fare one hot encoding oppure
-#label encoding, ma in questo caso preferiamo toglierle
-total <- df_master[,-c(1,7,8,9,10,11,14,20,21,22,23)]
+#label encoding se vi sono pochi fattori
+total <- df_master[,-c(1,7,8,9,10,21)]
+#Qua facciamo label encoding
+total$SEND_WEEKDAY <- as.numeric(total$SEND_WEEKDAY)
+total$COD_FID <- as.numeric(total$COD_FID)
+total$EMAIL_PROVIDER_CLEAN <- as.numeric(total$EMAIL_PROVIDER_CLEAN)
+total$REGION <- as.numeric(total$REGION)
 
 train_set <- total[train_index,]
 test_set  <- total[-train_index,]
@@ -29,7 +32,7 @@ test_set  <- total[-train_index,]
 #dopo diversi tentativi questo è il migliore
 xgb <- xgboost(data = as.matrix(train_set[,-1]), 
                label = train_set[,'TARGET'], 
-               max.depth = 15, eta = 0.1, nthread = 4, nrounds = 100,
+               max.depth = 5, eta = 0.3, nthread = 4, nrounds = 75,
                objective = "binary:logistic"
 )
 
