@@ -7,7 +7,7 @@ require(ROSE)
 set.seed(12345)
 
 setwd("/home/pranav/Desktop/web marketing/datasets/")
-df_master <- read.csv("df_master.csv")
+df_master <- read.csv2("df_master.csv")
 
 train_index <- createDataPartition(df_master$TARGET, 
                                    p = .60, 
@@ -15,43 +15,29 @@ train_index <- createDataPartition(df_master$TARGET,
                                    times = 1)
 df_master[,'TARGET'] <- as.factor(df_master[,'TARGET'])
 
-#f1 <- function(data, lev = NULL, model = NULL) {
-#  f1_val <- F1_Score(y_pred = data$pred, y_true = data$obs, positive = lev[1])
-#  c(F1 = f1_val)
-#}
 
 #elimino gli indici nella prima colonna che sono ID
-#train_set <- df_master[train_index,-c(1,3,4,5,6,9,10)]
-#test_set  <- df_master[-train_index,-c(1,3,4,5,6,9,10)] 
+# e le colonne ripetitive
 
-colonne_na <- sapply(colnames(df_master[,-c(1,5,6,9,10)]),
-                     function(x) any(is.na(df_master[,x])))
-colonne_na[colonne_na == TRUE]
-#EMAIL_PROVIDER_CLEAN, PRV, W_PHONE, TYP_JOB
-#Li elimino
-
-total_rf <- df_master[,-c(1,5,6,9,10)][,!colonne_na]
+total_rf <- df_master[,-c(1,7,8,9,10,21)]
 
 train_set_rf <- total_rf[train_index,]
 #train_set_rf <- SMOTE(TARGET ~ ., train_set_rf, k=3,
-#                      perc.over = 100, perc.under=100)
-#train_set_ROSE <- ROSE(TARGET~.,train_set_rf)$data
+#                      perc.over = 100, perc.under=100) #toppo lento (toppe prove)
+#train_set_ROSE <- ROSE(TARGET~.,train_set_rf)$data #un altro possibile metodo
 
-train_set_rf <- ovun.sample(TARGET~.,train_set_rf,method="both",p=0.5)$data #Questo è quello che ha funzionato "meglio"
+#Questo è quello che ha funzionato "meglio"
+train_set_rf <- ovun.sample(TARGET~.,train_set_rf,method="both",p=0.5)$data 
 test_set_rf  <- total_rf[-train_index,]
 
-TreeBag_model  <- train(x=train_set_ROSE[,-1],y=train_set_ROSE[,'TARGET'], method = "treebag",
+TreeBag_model  <- train(x=train_set_rf[,-1],y=train_set_rf[,'TARGET'], method = "treebag",
                    trControl=trainControl(method="none"),
                    metric="Accuracy") 
 
-rf_mdl =randomForest(x=train_set_ROSE[,-1],y=train_set_ROSE[,'TARGET'],
+rf_mdl = randomForest(x=train_set_rf[,-1],y=train_set_rf[,'TARGET'],
                      ntree=100, trControl = trainControl(method="none"),
                      keep.forest=TRUE,importance=TRUE)
 
-
-rf_mdl_2 =randomForest(x=train_set_ROSE[,-1],y=train_set_ROSE[,'TARGET'],
-                     ntree=100, trControl = trainControl(method="none"),
-                     keep.forest=TRUE,importance=TRUE,class_weight=c(1,150))
 
 print(rf_mdl)
 pred <- predict(rf_mdl, test_set_rf[,-1])

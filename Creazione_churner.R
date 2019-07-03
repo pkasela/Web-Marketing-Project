@@ -1,5 +1,6 @@
 require(tidyr)
 require(dplyr)
+require(purrr)
 
 set.seed(12345)
 
