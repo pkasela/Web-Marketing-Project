@@ -11,9 +11,9 @@ require(ROSE)
 require(gbm)
 require(xgboost)
 
-df_master = read.csv2("C:/Users/Marco/Google Drive (msavi195@gmail.com)/DATA SCIENCE/PRIMO ANNO/Web Marketing/Progetto/df_master.csv", sep = ";")
-
 set.seed(12345)
+
+df_master = read.csv2("C:/Users/Marco/Google Drive (msavi195@gmail.com)/DATA SCIENCE/PRIMO ANNO/Web Marketing/Progetto/df_master.csv", sep = ";")
 
 df_master_trees <- df_master[,-c(1,7,8,9,10,21)]
 
@@ -53,7 +53,7 @@ printcp(tree_model)
 
 #Parte Test 
 pred <- rpart.predict(tree_model, test_set[,-1],type = "class")
-confusionMatrix(pred, test_set[,1],positive='1') #qui da errore 
+confusionMatrix(pred, test_set[,1],positive='1') 
 
 recall(pred,test_set[,1],relevant = '1')
 precision(pred,test_set[,1],relevant = '1')
@@ -62,8 +62,10 @@ Accuracy(pred,test_set[,1])
 
 #ROC curve 
 library(pROC)
-pred_with_prob <- rpart.predict(tree_model, test_set[, -1], type = "prob")
-#ggroc(roc(test_set$TARGET, pred_with_prob[,1]))
+pred_with_prob <- rpart.predict(tree_model, test_set[, -1], type = "prob")[,2]
+#plot(performance(prediction(pred_with_prob, test_set$TARGET), 'tpr', 'fpr'))
+ROC1 <- performance(prediction(pred_with_prob, test_set$TARGET), 'tpr', 'fpr')
+ROC_DF1 <- data.frame(x=ROC1@x.values[[1]], y=ROC1@y.values[[1]])
 
 #Random Forest 
 memory.limit(100000)
@@ -79,6 +81,8 @@ precision(pred_rf ,test_set[,1],relevant = '1')
 F1_Score(pred_rf ,test_set[,1],positive = '1')
 Accuracy(pred_rf, test_set[,1])
 
-pred_with_prob_rf <- rpart.predict(tree_model_rf, test_set[, -1], type = "prob")
-ggroc(list(RF= roc(test_set$TARGET, pred_with_prob_rf[,1]),DT= roc(test_set$TARGET, pred_with_prob[,1])))
-#ggroc(roc(test_set$TARGET, pred_with_prob_rf[,1]))
+pred_with_prob_rf <- rpart.predict(tree_model_rf, test_set[, -1], type = "prob")[,2]
+#plot(performance(prediction(pred_with_prob_rf, test_set$TARGET), 'tpr', 'fpr'))
+
+ROC2 <- performance(prediction(pred_with_prob_rf, test_set$TARGET), 'tpr', 'fpr')
+ROC_DF2 <- data.frame(x=ROC2@x.values[[1]], y=ROC2@y.values[[1]])
