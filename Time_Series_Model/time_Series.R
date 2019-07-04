@@ -6,7 +6,7 @@ library(keras)
 
 set.seed(12345)
 
-setwd("/home/pranav/Desktop/web marketing/datasets/")
+setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
 
 df_7_scrontrini <- read.csv2("raw_7_tic.csv")
 

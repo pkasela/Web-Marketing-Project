@@ -8,7 +8,7 @@ source('Email_Engagement/Email_Engagement_DT.R')
 source('Email_Engagement/Email_Engagement_Propensity_NB_&_TAN.R')
 #model using xgBOOST
 source('Email_Engagement/Email_Engagement_Propensity_xgBOOST.R')
-#plot ROC  + results
+#plot ROC  curve with AUC measure
 ggplot() + 
   geom_line(data = ROC_DT,aes(x,y,col="A"),show.legend = TRUE) +
   xlab('False Positive Rate') + ylab('True Positive Rate') +
@@ -40,10 +40,11 @@ ggplot() +
            label= paste0("AUC xgBoost2 = ",AUC_XG2),
            col="orange")
 
-Recall_DF <- data.frame(Model=c("DT","RF","NB","TAN","xgBoost 1","xgBoost 2"),
+#barplot delle F1-measure
+F1_measure_DF <- data.frame(Model=c("DT","RF","NB","TAN","xgBoost 1","xgBoost 2"),
                         value=round(c(F1_DT,F1_RF,F1_NB,F1_TAN,F1_xg1,F1_xg2),3))
 
-ggplot(data=Recall_DF,aes(x=reorder(Model, -value),y=value)) +
+ggplot(data=F1_measure_DF,aes(x=reorder(Model, -value),y=value)) +
   geom_bar(stat = 'identity', fill="steelblue")+
   geom_text(aes(label=value), vjust=1.6, color="white", size=5)+
   xlab("Model") + ylab("F1-Measure")+
@@ -58,6 +59,7 @@ source('Propensity_churn/churn_NB_&_TAN.R')
 #model using xgBOOST
 source('Propensity_churn/churn_xgb.R')
 
+#bar plot delle accuracy 
 Accuracy_total <- rbind(Accuracy_total,data.frame(model = c("BN","TAN","xgBoost"),
                                                   Accuracy = c(Acc_BN,Acc_TAN,Acc_xgb)))
 Accuracy_total$Accuracy <- round(Accuracy_total$Accuracy,3)
@@ -70,3 +72,22 @@ ggplot(data=Accuracy_total,aes(x=reorder(model, -Accuracy),y=Accuracy)) +
 
 #model to predict the future income using ARIMA and LSTM (RNN)
 source('Time_Series_Model/time_Series.R')
+
+#daily prevision ARIMA
+plot(forecast(mod,10),include=30,main="Daily Forecast",
+     xlab="Days",ylab="Total Revenue")
+lines(331:341,time_series[332:342])
+
+#weekly prevision ARIMA
+plot(forecast(mod1,2),main="Weekly Forecast",
+     xlab="Weeks",ylab="Total Revenue")
+lines((nrow(df_weekly)-2):nrow(df_weekly),
+      df_weekly$weekly_income[(nrow(df_weekly)-2):nrow(df_weekly)])
+
+#weekly with LSTM
+ggplot(data.frame(x=1:length(y_test_no_scaled),y=y_test_no_scaled),
+       aes(x,y)) + 
+  geom_line() +
+  geom_line(data=data.frame(x=1:length(y_test_no_scaled),y=y_pred_no_scaled),
+            aes(x,y),col="red")
+
