@@ -65,7 +65,7 @@ Accuracy_total$Accuracy <- round(Accuracy_total$Accuracy,3)
 ggplot(data=Accuracy_total,aes(x=reorder(model, -Accuracy),y=Accuracy)) +
   geom_bar(stat = 'identity', fill="steelblue")+
   geom_text(aes(label=Accuracy), vjust=1.6, color="white", size=5)+
-  xlab("Model") + ylab("F1-Measure")+
+  xlab("Model") + ylab("Accuracy")+
   theme_minimal()
 
 #model to predict the future income using ARIMA and LSTM (RNN)
