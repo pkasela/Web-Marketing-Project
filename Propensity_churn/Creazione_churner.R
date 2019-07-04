@@ -153,3 +153,6 @@ df_master_2 <- df_churn %>%
   mutate(REGION = fct_explicit_na(REGION))
 
 write.csv(df_master_2,"df_master_churner.csv",row.names = FALSE)
+
+setwd('/home/pranav/Desktop/Web-Marketing-Project/')
+

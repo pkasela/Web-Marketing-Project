@@ -33,5 +33,7 @@ xgb <- xgboost(data = as.matrix(train_set[,-1]),
 
 y_pred <- predict(xgb, as.matrix(test_set[,-1]))
 pred <- as.factor(as.numeric(y_pred > 0.5))
-Accuracy(pred,test_set[,1])
+Acc_xgb <- Accuracy(pred,test_set[,1])
 confusionMatrix(pred,as.factor(test_set$CHURN),positive = '1')
+
+setwd('/home/pranav/Desktop/Web-Marketing-Project/')

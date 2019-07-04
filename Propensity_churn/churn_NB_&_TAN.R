@@ -44,7 +44,7 @@ confusionMatrix(pred,test_set[,1],positive='1')
 recall(pred,test_set[,1],relevant = '1')
 precision(pred,test_set[,1],relevant = '1')
 F1_Score(pred,test_set[,1],positive = '1')
-Accuracy(pred,test_set[,1])
+Acc_BN <- Accuracy(pred,test_set[,1])
 
 
 pred_2 <- predict(fitted, test_set,prob = TRUE)
@@ -52,4 +52,6 @@ confusionMatrix(pred_2,test_set[,1],positive='1')
 recall(pred_2,test_set[,1],relevant = '1')
 precision(pred_2,test_set[,1],relevant = '1')
 F1_Score(pred_2,test_set[,1],positive = '1')
-Accuracy(pred_2,test_set[,1])
+Acc_TAN <- Accuracy(pred_2,test_set[,1])
+
+setwd('/home/pranav/Desktop/Web-Marketing-Project/')

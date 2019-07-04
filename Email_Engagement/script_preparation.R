@@ -385,3 +385,5 @@ str(df_master)
 summary(df_master)
 
 write.csv2(df_master,"df_master.csv",row.names = FALSE)
+
+setwd('/home/pranav/Desktop/Web-Marketing-Project/')

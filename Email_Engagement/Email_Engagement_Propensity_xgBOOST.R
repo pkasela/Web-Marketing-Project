@@ -47,7 +47,7 @@ y_pred <- predict(xgb, as.matrix(test_set[,-1]))
 pred <- as.factor(as.numeric(y_pred > 0.5))
 recall(pred,as.factor(test_set[,1]),relevant = '1')
 precision(pred,as.factor(test_set[,1]),relevant = '1')
-F1_Score(pred,as.factor(test_set[,1]),positive = '1')
+F1_xg1 <- F1_Score(pred,as.factor(test_set[,1]),positive = '1')
 Accuracy(pred,test_set[,1])
 ROC1 <- performance(prediction(y_pred,test_set$TARGET), 'tpr', 'fpr')
 ROC_XG1 <- data.frame(x=ROC1@x.values[[1]], y=ROC1@y.values[[1]])
@@ -58,7 +58,7 @@ y_pred_2 <- predict(xgb2, as.matrix(test_set[,-1]))
 pred_2 <- as.factor(as.numeric(y_pred > 0.5))
 recall(pred_2,as.factor(test_set[,1]),relevant = '1')
 precision(pred_2,as.factor(test_set[,1]),relevant = '1')
-F1_Score(pred_2,as.factor(test_set[,1]),positive = '1')
+F1_xg2 <- F1_Score(pred_2,as.factor(test_set[,1]),positive = '1')
 Accuracy(pred_2,test_set[,1])
 ROC2 <- performance(prediction(y_pred_2,test_set$TARGET), 'tpr', 'fpr')
 ROC_XG2 <- data.frame(x=ROC2@x.values[[1]], y=ROC2@y.values[[1]])
@@ -77,3 +77,5 @@ ggplot() +
   annotate("text", x=0.6, y=0.05, 
            label= paste0("AUC XG2 = ",AUC_XG1),
            col="red")
+
+setwd('/home/pranav/Desktop/Web-Marketing-Project/')

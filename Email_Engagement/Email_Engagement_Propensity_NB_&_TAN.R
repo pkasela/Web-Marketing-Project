@@ -60,7 +60,7 @@ pred <- predict(fitted2, test_set_rf)
 confusionMatrix(pred,test_set_rf[,1],positive='1')
 recall(pred,test_set_rf[,1],relevant = '1')
 precision(pred,test_set_rf[,1],relevant = '1')
-F1_Score(pred,test_set_rf[,1],positive = '1')
+F1_NB <- F1_Score(pred,test_set_rf[,1],positive = '1')
 Accuracy(pred,test_set_rf[,1])
 
 ROC1 <- performance(prediction(as.numeric(pred), test_set_rf$TARGET), 'tpr', 'fpr')
@@ -73,7 +73,7 @@ pred_2 <- predict(fitted, test_set_rf,prob = TRUE)
 confusionMatrix(pred_2,test_set_rf[,1],positive='1')
 recall(pred_2,test_set_rf[,1],relevant = '1')
 precision(pred_2,test_set_rf[,1],relevant = '1')
-F1_Score(pred_2,test_set_rf[,1],positive = '1')
+F1_TAN <- F1_Score(pred_2,test_set_rf[,1],positive = '1')
 Accuracy(pred_2,test_set_rf[,1])
 
 ROC2 <- performance(prediction(as.numeric(pred_2), test_set_rf$TARGET), 'tpr', 'fpr')
@@ -94,3 +94,5 @@ ggplot() +
   annotate("text", x=0.6, y=0.05, 
            label= paste0("AUC RF = ",AUC_TAN),
            col="blue")
+
+setwd('/home/pranav/Desktop/Web-Marketing-Project/')

@@ -54,7 +54,7 @@ confusionMatrix(pred, test_set[,1],positive='1')
 
 recall(pred,test_set[,1],relevant = '1')
 precision(pred,test_set[,1],relevant = '1')
-F1_Score(pred,test_set[,1],positive = '1')
+F1_DT <- F1_Score(pred,test_set[,1],positive = '1')
 Accuracy(pred,test_set[,1])
 
 #ROC curve 
@@ -73,10 +73,9 @@ importance(tree_model_rf)
 
 pred_rf <- rpart.predict(tree_model_rf, test_set[,-1], type = "class")
 confusionMatrix(pred_rf, test_set[,1],positive='1')
-
 recall(pred_rf, test_set[,1],relevant = '1')
 precision(pred_rf ,test_set[,1],relevant = '1')
-F1_Score(pred_rf ,test_set[,1],positive = '1')
+F1_RF <- F1_Score(test_set[,1],pred_rf,positive = '1')
 Accuracy(pred_rf, test_set[,1])
 
 pred_with_prob_rf <- rpart.predict(tree_model_rf, test_set[, -1], type = "prob")[,2]
@@ -100,3 +99,5 @@ ggplot() +
   annotate("text", x=0.6, y=0.05, 
            label= paste0("AUC RF = ",AUC_RF),
            col="blue")
+
+setwd('/home/pranav/Desktop/Web-Marketing-Project/')
