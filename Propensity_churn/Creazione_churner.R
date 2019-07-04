@@ -5,13 +5,15 @@ library(forcats)
 
 set.seed(12345)
 
-setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
-
-df_1_cli_fid <- read.csv2("raw_1_cli_fid.csv", na.strings = c("NA", ""))
-df_2_cli_account <- read.csv2("raw_2_cli_account.csv", na.strings = c("NA", ""))
-df_3_cli_address <- read.csv2("raw_3_cli_address.csv", na.strings = c(""), stringsAsFactors = F)
-df_4_cli_privacy <- read.csv2("raw_4_cli_privacy.csv" , na.strings = c("NA", ""))
-df_7_scrontrini <- read.csv2("raw_7_tic.csv")
+df_1_cli_fid <- read.csv2("datasets/raw_1_cli_fid.csv", 
+                          na.strings = c("NA", ""))
+df_2_cli_account <- read.csv2("datasets/raw_2_cli_account.csv", 
+                              na.strings = c("NA", ""))
+df_3_cli_address <- read.csv2("datasets/raw_3_cli_address.csv", 
+                              na.strings = c(""), stringsAsFactors = F)
+df_4_cli_privacy <- read.csv2("datasets/raw_4_cli_privacy.csv" , 
+                              na.strings = c("NA", ""))
+df_7_scrontrini <- read.csv2("datasets/raw_7_tic.csv")
 
 df_7_scrontrini$DATETIME <- as.Date(df_7_scrontrini$DATETIME)
 #min(df_7_scrontrini$DATETIME), max(df_7_scrontrini$DATETIME)
@@ -152,7 +154,4 @@ df_master_2 <- df_churn %>%
   mutate(PRV = fct_explicit_na(PRV)) %>%
   mutate(REGION = fct_explicit_na(REGION))
 
-write.csv(df_master_2,"df_master_churner.csv",row.names = FALSE)
-
-setwd('/home/pranav/Desktop/Web-Marketing-Project/')
-
+write.csv(df_master_2,"datasets/df_master_churner.csv",row.names = FALSE)

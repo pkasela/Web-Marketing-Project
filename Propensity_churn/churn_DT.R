@@ -6,8 +6,8 @@ library(MLmetrics)
 library(rpart)
 
 set.seed(12345)
-setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
-df_master_churner <- read.csv("df_master_churner.csv")
+
+df_master_churner <- read.csv("datasets/df_master_churner.csv")
 
 #Si elimina Client ID, LAST_PURCHASE (che indica i churners) e PRV (troppi fattori)
 df_master_churn_trees <- df_master_churner[,-c(2,3,13)]
@@ -86,7 +86,3 @@ cat(Accuracy_rf)
 Accuracy_total <- data.frame(model = c("DT_all", "DT_less_one", "RF"), Accuracy = c(Accuracy_dt_all, 
                                                                                     Accuracy_dt_less_one, 
                                                                                     Accuracy_rf))
-
-print(Accuracy_total)
-
-setwd('/home/pranav/Desktop/Web-Marketing-Project/')

@@ -11,24 +11,23 @@ library(forcats)
 #### IMPORTING DATA SETS ####
 
 ### set working directory ###
-setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
 ### clients fidelity subscriptions ###
-df_1_cli_fid <- read.csv2("raw_1_cli_fid.csv", na.strings = c("NA", ""))
+df_1_cli_fid <- read.csv2("datasets/raw_1_cli_fid.csv", na.strings = c("NA", ""))
 
 ### clients accounts details ###
-df_2_cli_account <- read.csv2("raw_2_cli_account.csv", na.strings = c("NA", ""))
+df_2_cli_account <- read.csv2("datasets/raw_2_cli_account.csv", na.strings = c("NA", ""))
   
 ### clients addresses ###
-df_3_cli_address <- read.csv2("raw_3_cli_address.csv", na.strings = c(""), stringsAsFactors = F)
+df_3_cli_address <- read.csv2("datasets/raw_3_cli_address.csv", na.strings = c(""), stringsAsFactors = F)
 
 ### clients privacy ###
-df_4_cli_privacy <- read.csv2("raw_4_cli_privacy.csv" , na.strings = c("NA", ""))
+df_4_cli_privacy <- read.csv2("datasets/raw_4_cli_privacy.csv" , na.strings = c("NA", ""))
 
 ### email campaign characterization ###
-df_5_camp_cat <- read.csv2("raw_5_camp_cat.csv" , na.strings = c("NA", ""))
+df_5_camp_cat <- read.csv2("datasets/raw_5_camp_cat.csv" , na.strings = c("NA", ""))
   
 ### email event ###
-df_6_camp_event <- read.csv2("raw_6_camp_event.csv" , na.strings = c("NA", ""))
+df_6_camp_event <- read.csv2("datasets/raw_6_camp_event.csv" , na.strings = c("NA", ""))
 
 
 
@@ -384,6 +383,4 @@ df_master <- target_event_w_prev %>%
 str(df_master)
 summary(df_master)
 
-write.csv2(df_master,"df_master.csv",row.names = FALSE)
-
-setwd('/home/pranav/Desktop/Web-Marketing-Project/')
+write.csv2(df_master,"datasets/df_master.csv",row.names = FALSE)

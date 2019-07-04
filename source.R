@@ -1,5 +1,9 @@
-setwd('/home/pranav/Desktop/Web-Marketing-Project/')
 set.seed(12345)
+
+setwd('/home/pranav/Desktop/Web-Marketing-Project/')
+#Nella cartella del codice ci deve essere una cartella con nome "datasets"
+#contenente le 7 tabelle dei dati
+
 #Script preparation as done in class
 source('Email_Engagement/script_preparation.R')
 #model using DT and RF
@@ -82,12 +86,21 @@ lines(331:341,time_series[332:342])
 plot(forecast(mod1,2),main="Weekly Forecast",
      xlab="Weeks",ylab="Total Revenue")
 lines((nrow(df_weekly)-2):nrow(df_weekly),
-      df_weekly$weekly_income[(nrow(df_weekly)-2):nrow(df_weekly)])
+      df_weekly$weekly_income_not_scaled[(nrow(df_weekly)-2):nrow(df_weekly)])
 
 #weekly with LSTM
-ggplot(data.frame(x=1:length(y_test_no_scaled),y=y_test_no_scaled),
-       aes(x,y)) + 
-  geom_line() +
-  geom_line(data=data.frame(x=1:length(y_test_no_scaled),y=y_pred_no_scaled),
-            aes(x,y),col="red")
+ggplot(data.frame(x=1:length(y_test_no_scaled),y=y_test_no_scaled)) + 
+  geom_line(aes(x,y,col="A")) +
+  geom_line(data=data.frame(x=1:length(y_pred_no_scaled),y=y_pred_no_scaled),
+            aes(x,y,col="B")) +
+  scale_colour_manual(name = "Revenue", 
+                      values = c("A"="red","B"="blue"),
+                      labels = c("Actual", "Predicted")) +
+  ylab("Total Revenue") + xlab("Weeks") +
+  ggtitle("Weekly Predictions") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  annotate("text", x = 2.5,y=2000000,label=paste0("MAE: ", round(MAE,4)*100,"%"))
 
+#sink("sessionInfo.txt")
+#sessionInfo()
+#sink()

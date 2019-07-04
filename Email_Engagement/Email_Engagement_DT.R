@@ -7,8 +7,7 @@ library(MLmetrics)
 library(rpart)
 
 set.seed(12345)
-setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
-df_master = read.csv2("df_master.csv")
+df_master = read.csv2("datasets/df_master.csv")
 
 ###############################################
 #######@pranav Commentare sul perché vanno eliminate tale colonne
@@ -99,5 +98,3 @@ ggplot() +
   annotate("text", x=0.6, y=0.05, 
            label= paste0("AUC RF = ",AUC_RF),
            col="blue")
-
-setwd('/home/pranav/Desktop/Web-Marketing-Project/')

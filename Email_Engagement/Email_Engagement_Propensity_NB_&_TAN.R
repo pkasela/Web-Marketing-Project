@@ -8,8 +8,7 @@ library(ROCR)
 
 set.seed(12345)
 
-setwd("/home/pranav/Desktop/Web-Marketing-Project//datasets/")
-df_master <- read.csv2("df_master.csv")
+df_master <- read.csv2("datasets/df_master.csv")
 
 train_index <- createDataPartition(df_master$TARGET, 
                                    p = .60, 
@@ -94,5 +93,3 @@ ggplot() +
   annotate("text", x=0.6, y=0.05, 
            label= paste0("AUC RF = ",AUC_TAN),
            col="blue")
-
-setwd('/home/pranav/Desktop/Web-Marketing-Project/')

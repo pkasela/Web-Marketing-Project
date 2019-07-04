@@ -1,14 +1,12 @@
 library(tidyr)
 library(dplyr)
 library(forecast)
-#library(purrr)
+library(ggplot2)
 library(keras)
 
 set.seed(12345)
 
-setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
-
-df_7_scrontrini <- read.csv2("raw_7_tic.csv")
+df_7_scrontrini <- read.csv2("datasets/raw_7_tic.csv")
 
 df_7_scrontrini$DATETIME <- as.Date(df_7_scrontrini$DATETIME)
 df_7_scrontrini$IMPORTO_LORDO <- as.numeric(gsub(",",".",df_7_scrontrini$IMPORTO_LORDO))

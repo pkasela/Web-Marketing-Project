@@ -6,8 +6,7 @@ library(xgboost)
 
 set.seed(12345)
 
-setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
-df_master_churner <- read.csv("df_master_churner.csv")
+df_master_churner <- read.csv("datasets/df_master_churner.csv")
 
 train_index <- createDataPartition(df_master_churner$CHURN, 
                                    p = .70, 
@@ -35,5 +34,3 @@ y_pred <- predict(xgb, as.matrix(test_set[,-1]))
 pred <- as.factor(as.numeric(y_pred > 0.5))
 Acc_xgb <- Accuracy(pred,test_set[,1])
 confusionMatrix(pred,as.factor(test_set$CHURN),positive = '1')
-
-setwd('/home/pranav/Desktop/Web-Marketing-Project/')

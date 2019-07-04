@@ -6,9 +6,7 @@ library(ROSE)
 library(bnlearn)
 
 set.seed(12345)
-
-setwd("/home/pranav/Desktop/Web-Marketing-Project/datasets/")
-df_master_churner <- read.csv("df_master_churner.csv")
+df_master_churner <- read.csv("datasets/df_master_churner.csv")
 
 train_index <- createDataPartition(df_master_churner$CHURN, 
                                    p = .70, 
@@ -53,5 +51,3 @@ recall(pred_2,test_set[,1],relevant = '1')
 precision(pred_2,test_set[,1],relevant = '1')
 F1_Score(pred_2,test_set[,1],positive = '1')
 Acc_TAN <- Accuracy(pred_2,test_set[,1])
-
-setwd('/home/pranav/Desktop/Web-Marketing-Project/')
