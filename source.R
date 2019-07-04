@@ -5,7 +5,7 @@ source('Email_Engagement/script_preparation.R')
 #model using DT and RF
 source('Email_Engagement/Email_Engagement_DT.R')
 #model using RF
-source('Email_Engagement/Email_Engagement_Propensity.R')
+source('Email_Engagement/Email_Engagement_Propensity_NB_&_TAN.R')
 #model using xgBOOST
 source('Email_Engagement/Email_Engagement_Propensity_xgBOOST.R')
 #plot accuracy
@@ -15,7 +15,7 @@ source('Propensity_churn/Creazione_churner.R')
 #model using DT and RF
 source('Propensity_churn/churn_DT.R')
 #model using RF
-source('Propensity_churn/churn_RF.R')
+source('Propensity_churn/churn_NB_&_TAN.R')
 #model using xgBOOST
 source('Propensity_churn/churn_xgb.R')
 
