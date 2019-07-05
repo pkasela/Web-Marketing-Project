@@ -14,7 +14,12 @@ train_index <- createDataPartition(df_master$TARGET,
                                    p = .60, 
                                    list = FALSE, 
                                    times = 1)
+
+#elimino gli indici nella prima colonna che sono ID
+# e le colonne non accettate dal modello oppure con tantissimi factor
 df_master_trees <- df_master[,-c(1,7,8,9,10,17,21)]
+
+#converto tutti in factor perché richiesto dal modello
 df_master_trees[,'TARGET'] <- as.factor(df_master_trees[,'TARGET'])
 df_master_trees[,'NUM_SEND_PREV'] <- as.factor(df_master_trees[,'NUM_SEND_PREV'])
 df_master_trees[,'NUM_OPEN_PREV'] <- as.factor(df_master_trees[,'NUM_OPEN_PREV'])
@@ -35,12 +40,9 @@ df_master_trees[,'FLAG_PRIVACY_2'] <- as.factor(df_master_trees[,'FLAG_PRIVACY_2
 df_master_trees[,'FLAG_DIRECT_MKT'] <- as.factor(df_master_trees[,'FLAG_DIRECT_MKT'])
 str(df_master_trees)
 
-#elimino gli indici nella prima colonna che sono ID
-# e le colonne ripetitive
-
 train_set_rf <- df_master_trees[train_index,]
 #train_set_rf <- SMOTE(TARGET ~ ., train_set_rf, k=3,
-#                      perc.over = 100, perc.under=100) #toppo lento (toppe prove)
+#                      perc.over = 100, perc.under=100) #toppo lento (toppe prove per cercare i k vicini)
 #train_set_ROSE <- ROSE(TARGET~.,train_set_rf)$data #un altro possibile metodo
 
 #Questo è quello che ha funzionato "meglio"
@@ -48,13 +50,17 @@ train_set_rf <- df_master_trees[train_index,]
 train_set_rf <- ovun.sample(TARGET~.,train_set_rf,method="both",p=0.5)$data 
 test_set_rf  <- df_master_trees[-train_index,]
 
+#alleno NaiveBayes
 bn <- naive.bayes(train_set_rf, "TARGET")
 fitted2 <- bn.fit(bn,train_set_rf, method = "mle")
 
+#alleno TreeAugmentedNetwork
 tan <- tree.bayes(train_set_rf, "TARGET")
 fitted <- bn.fit(tan, train_set_rf, method = "bayes")
 
 
+#predizioni con i modelli e le varie misure,
+#noi usiamo in particolare F1 e AUC-ROC
 pred <- predict(fitted2, test_set_rf)
 confusionMatrix(pred,test_set_rf[,1],positive='1')
 recall(pred,test_set_rf[,1],relevant = '1')
@@ -81,6 +87,7 @@ AUC_TAN <- round(performance(prediction(as.numeric(pred_2),
                                        test_set_rf$TARGET),'auc')@y.values[[1]],3)
 
 
+#Plot della ROC
 ggplot() + 
   geom_line(data = ROC_NB,aes(x,y,col="A"),show.legend = TRUE) +
   xlab('False Positive Rate') + ylab('True Positive Rate') +

@@ -6,9 +6,9 @@ setwd('/home/pranav/Desktop/Web-Marketing-Project/')
 
 #Script preparation as done in class
 source('Email_Engagement/script_preparation.R')
-#model using DT and RF
+#model using Decisition Trees(DT) and RandomForest(RF)
 source('Email_Engagement/Email_Engagement_DT.R')
-#model using RF
+#model using NaiveBayes and TreeAugmentedNB(TAN)
 source('Email_Engagement/Email_Engagement_Propensity_NB_&_TAN.R')
 #model using xgBOOST
 source('Email_Engagement/Email_Engagement_Propensity_xgBOOST.R')
@@ -56,9 +56,9 @@ ggplot(data=F1_measure_DF,aes(x=reorder(Model, -value),y=value)) +
 
 #Script prepartion for the churners
 source('Propensity_churn/Creazione_churner.R')
-#model using DT and RF
+#model using Decisition Trees(DT) and RandomForest(RF)
 source('Propensity_churn/churn_DT.R')
-#model using RF
+#model using NaiveBayes and TreeAugmentedNB(TAN)
 source('Propensity_churn/churn_NB_&_TAN.R')
 #model using xgBOOST
 source('Propensity_churn/churn_xgb.R')
@@ -88,7 +88,7 @@ plot(forecast(mod1,2),main="Weekly Forecast",
 lines((nrow(df_weekly)-2):nrow(df_weekly),
       df_weekly$weekly_income_not_scaled[(nrow(df_weekly)-2):nrow(df_weekly)])
 
-#weekly with LSTM
+#weekly predictions with LSTM
 ggplot(data.frame(x=1:length(y_test_no_scaled),y=y_test_no_scaled)) + 
   geom_line(aes(x,y,col="A")) +
   geom_line(data=data.frame(x=1:length(y_pred_no_scaled),y=y_pred_no_scaled),

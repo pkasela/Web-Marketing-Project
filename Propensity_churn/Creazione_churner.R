@@ -1,7 +1,7 @@
 library(tidyr)
 library(dplyr)
 library(forcats)
-
+library(ggplot2)
 
 set.seed(12345)
 
@@ -19,11 +19,47 @@ df_7_scrontrini$DATETIME <- as.Date(df_7_scrontrini$DATETIME)
 #min(df_7_scrontrini$DATETIME), max(df_7_scrontrini$DATETIME)
 #data inizio raccolta: 2018-05-01, data fine raccolta: 2019-04-30
 
-df_7_scrontrini %>%
+#vediamo distribuzione clienti rispetto a ogni quanto arriva l'ultimo
+#acquisto dal penultimo acquisto
+df <- df_7_scrontrini
+df <- df[order(df$ID_CLI,rev(df$DATETIME)),]
+dft2 <- dft %>% mutate(DATETIME=as.Date(DATETIME)) %>% 
+    group_by(ID_SCONTRINO) %>% 
+    summarise(ID_CLI = max(ID_CLI),DATETIME=max(DATETIME))
+dft2 <- dft2[order(dft2$ID_CLI,rev(dft2$DATETIME)),]
+
+dft3 <- dft2 %>% group_by(ID_CLI) %>% summarise(tot = n()) %>% filter(tot>1)
+dft3 <- left_join(dft3,dft2,by="ID_CLI")
+dft4 <- dft3 %>% 
+  arrange(desc(DATETIME)) %>% 
+  group_by(ID_CLI) %>% 
+  summarise(last=nth(DATETIME,1),secondl=nth(DATETIME,2))
+hist(as.numeric(dft4$last - dft4$secondl),main="Last Purchase - Second Last Purchase",
+     xlab="Days")
+
+ggplot(dft4,aes(as.numeric(last-secondl),cumsum(stat(count)/nrow(dft4)))) + 
+  geom_freqpoly(binwidth = 10,alpha=0.8,col="black") + 
+  xlab("Days") + ylab("Cumulative Percentage of Repurchase")+
+  geom_line(data = data.frame(days=1:300,const=0.80),aes(days,const),col="blue") +
+  geom_line(data = data.frame(y=seq(0,1,0.1),x=60),aes(x,y),col="blue") +
+  annotate("text",x=220,y=0.65,label="Il churner è stato definito come il cliente",
+           col="red",size=5.5) +
+  annotate("text",x=220,y=0.59,label="che non riacquista più in un intervallo",
+           col="red",size=5.5) +
+  annotate("text",x=200,y=0.53,label="di tempo di 60 giorni",
+           col="red",size=5.5) +
+  annotate("text",x=85,y=0.25,label="60 giorni",col="blue") +
+  annotate("text",x=250,y=0.82,label="80% dei clienti",col="blue")
+  theme_minimal()
+
+#notiamo che il 80%dei clienti riaquista entro 60 giorni, ma noi per essere meno serveri con
+# i churner consideriamo churn i clienti che non riacquistano entro 2 mesi e mezzo quindi
+# dal 2019-02-16 in poi
+ df_7_scrontrini %>%
   group_by(ID_CLI) %>%
   summarize(LAST_PURCHASE_DATE = max(DATETIME),
             TOTAL_PURCHASE = sum(IMPORTO_LORDO),
-            NUMBER_OF_PURCHASE=n()) %>%
+            NUMBER_OF_PURCHASE=n()) %>%1
   mutate(CHURN = as.numeric(LAST_PURCHASE_DATE < as.Date("2019-02-16"))) %>%
   select(CHURN,ID_CLI,LAST_PURCHASE_DATE,TOTAL_PURCHASE,NUMBER_OF_PURCHASE)-> df_churn
 
@@ -148,10 +184,11 @@ df_master <- df_1_cli_fid_clean %>%
   select(-ID_ADDRESS)
 
 
-#Questo è il dataset dei churn finale
+#Questo è il dataset dei churn finale in cui unisco tutti i dati
 df_master_2 <- df_churn %>%
   left_join(df_master, by="ID_CLI")%>%
   mutate(PRV = fct_explicit_na(PRV)) %>%
   mutate(REGION = fct_explicit_na(REGION))
 
+#salvo il file per poterlo riutilizzare
 write.csv(df_master_2,"datasets/df_master_churner.csv",row.names = FALSE)

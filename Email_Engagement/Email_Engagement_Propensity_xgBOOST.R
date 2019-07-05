@@ -19,7 +19,7 @@ train_index <- createDataPartition(df_master$TARGET,
 # e gli altri che sono o categorici (si potrebbe fare one hot encoding oppure
 #label encoding se vi sono pochi fattori
 total <- df_master[,-c(1,7,8,9,10,21)]
-#Qua facciamo label encoding
+#Qua facciamo label encoding poiché xgBoost accetta solo valori numerici
 total$SEND_WEEKDAY <- as.numeric(total$SEND_WEEKDAY)
 total$COD_FID <- as.numeric(total$COD_FID)
 total$EMAIL_PROVIDER_CLEAN <- as.numeric(total$EMAIL_PROVIDER_CLEAN)
@@ -35,13 +35,15 @@ xgb <- xgboost(data = as.matrix(train_set[,-1]),
                objective = "binary:logistic"
 )
 
-#esiste un modo per il booster che è lineare quindi molto più rapido ma meno preciso
+#esiste un modo per il booster che è lineare quindi molto più rapido ma meno preciso (di poco)
+#può fungere da buona stima per un modello più grande
 xgb2 <- xgboost(data = as.matrix(train_set[,-1]), 
                label = train_set[,'TARGET'], 
                max.depth = 20, booster = "gblinear", nthread = 4, nrounds = 50,
                objective = "binary:logistic"
 )
 
+#misure di buon funzionamento del modello 
 y_pred <- predict(xgb, as.matrix(test_set[,-1]))
 pred <- as.factor(as.numeric(y_pred > 0.5))
 recall(pred,as.factor(test_set[,1]),relevant = '1')
@@ -64,6 +66,7 @@ ROC_XG2 <- data.frame(x=ROC2@x.values[[1]], y=ROC2@y.values[[1]])
 AUC_XG2 <- round(performance(prediction(y_pred_2, 
                                         test_set$TARGET),'auc')@y.values[[1]],3)
 
+#plot ROC
 ggplot() + 
   geom_line(data = ROC_XG1,aes(x,y,col="A")) +
   xlab('False Positive Rate') + ylab('True Positive Rate') +

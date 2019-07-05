@@ -9,8 +9,8 @@ library(rpart)
 set.seed(12345)
 df_master = read.csv2("datasets/df_master.csv")
 
-###############################################
-#######@pranav Commentare sul perché vanno eliminate tale colonne
+#elimino gli indici nella prima colonna che sono ID
+# e le colonne non accettate dal modello oppure con tantissimi factor
 df_master_trees <- df_master[,-c(1,7,8,9,10,21)]
  
 df_master_trees[,'TARGET'] <- as.factor(df_master_trees[,'TARGET'])
