@@ -12,6 +12,7 @@ df_master_churner <- read.csv("datasets/df_master_churner.csv")
 #Si elimina Client ID, LAST_PURCHASE (che indica i churners) e PRV (troppi fattori)
 df_master_churn_trees <- df_master_churner[,-c(2,3,13)]
 
+#Traformazione variabili in factor
 df_master_churn_trees[,'CHURN'] <- as.factor(df_master_churn_trees[,'CHURN'])
 df_master_churn_trees[,'ID_NEG'] <- as.factor(df_master_churn_trees[,'ID_NEG'])
 df_master_churn_trees[,'TYP_CLI_FID'] <- as.factor(df_master_churn_trees[,'TYP_CLI_FID'])
@@ -51,7 +52,7 @@ F1_Score(pred,test_set[,1],positive = '1')
 Accuracy_dt_all <- Accuracy(pred,test_set[,1])
 cat(Accuracy_dt_all)
 
-#Tolgo Number of Purchase perhcé tutto albero dipende da quello praticamente
+#Tolgo Number of Purchase perché tutto l'albero dipende praticamente da quello 
 tree_model_churn1 <- rpart(CHURN ~ ., data= train_set[,-c(3,4)])
 rpart.plot(tree_model_churn1, extra = 106,roundint=FALSE)
 
