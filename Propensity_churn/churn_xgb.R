@@ -13,7 +13,7 @@ train_index <- createDataPartition(df_master_churner$CHURN,
                                    list = FALSE, 
                                    times = 1)
 
-
+#elimino colonne non utili per il modello xgb
 total <- df_master_churner[,-c(2,3,12,13)]
 #label encoding, since it's already a factor all we need is as.numeric
 total$COD_FID <- as.numeric(total$COD_FID) 
@@ -22,6 +22,7 @@ total$REGION <- as.numeric(total$REGION)
 train_set <- total[train_index,]
 test_set  <- total[-train_index,]
 
+#alleno modello
 #dtrain <- xgb.DMatrix(data = as.matrix(train_set_rf[,-1]), label = train_set_rf$TARGET)
 xgb <- xgboost(data = as.matrix(train_set[,-1]), 
                label = train_set[,'CHURN'], 
@@ -30,6 +31,7 @@ xgb <- xgboost(data = as.matrix(train_set[,-1]),
                
 )
 
+#parte test e valutazione modello
 y_pred <- predict(xgb, as.matrix(test_set[,-1]))
 pred <- as.factor(as.numeric(y_pred > 0.5))
 Acc_xgb <- Accuracy(pred,test_set[,1])
